@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-18",
+  "signals": {
+    "designMd": false,
+    "brandSpec": false,
+    "fonts": ["Archivo_900Black", "Sora_400Regular", "Sora_600SemiBold"],
+    "palette": "src/constants/tokens.ts + src/global.css :root (Hallmark custom already stamped)",
+    "framework": "Expo 58 / React Native / Expo Router / web PWA",
+    "product": "gta-launch-map — live midnight-meridian globe + launch zones",
+    "inspoMcp": false,
+    "togetherKey": "unknown"
+  },
+  "preserve": [
+    "src/constants/tokens.ts colour/type system",
+    "src/global.css Hallmark stamp + tokens",
+    "src/components/launch-globe.tsx globe as the picture",
+    "src/data/key-art.ts posters wired from assets/art/display",
+    "fan-made disclaimer posture in existing chrome"
+  ],
+  "introduce": [
+    "Display copies in assets/art/display so the 4K originals are not bundled",
+    "No Rockstar/Take-Two asset scrape or redistributed game art"
+  ],
+  "citations": [
+    "src/global.css:1-5",
+    "src/constants/tokens.ts:1-30",
+    "src/data/key-art.ts:1-18",
+    "package.json:5-34"
+  ]
+}

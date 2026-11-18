@@ -1,9 +1,50 @@
+/* Hallmark · shape: Globe Board (a live globe beside the next unlock, then the full roll-out board) · genre: atmospheric · theme: custom · job: attend · idea: "midnight sweeps west across a lit globe and releases each country as it passes" · vibe: "sunset coast, neon dusk, clock on the horizon"
+ * paper: oklch(0.18 0.04 330) · accent: oklch(0.70 0.19 35) · display: Archivo Black · body: Sora · hero: the globe with the live midnight meridian, the next country counting down beside it · nav: a wordmark and one fan-made note · footer: the disclaimer, sources and map credit · imagery: four posters from assets/art below the clock, each at its own aspect · signature: the line of midnight drawn live on the globe
+ * axes: dark/grotesk-heavy/chromatic-coral · posture: dark, three status hues (coral live, mango partly live, sea-glass midnight line) · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H4 E3 S4 R3 V4 · weakest: P (dark ground with a hot accent is the spent default), earned by the subject (it is night crossing the map) and split into three status hues */
+/* imagery update: posters from assets/art sit below the clock, each at its own aspect; the globe stays the first screen */
+
+/* Web-only mirror of src/constants/tokens.ts. React Native styles read the TS tokens. */
 :root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+  --color-ground: #170c1c;
+  --color-ground-raised: #22132a;
+  --color-ink: #fff1e6;
+  --color-ink-muted: #cfb3bf;
+  --color-line: #3a2442;
+  --color-live: #ff6a4d;
+  --color-rolling: #ffb347;
+  --color-midnight: #6fd6c4;
+  --color-ocean: #0f2f3a;
+  --font-display: 'Archivo_900Black', sans-serif;
+  --font-body: 'Sora_400Regular', sans-serif;
+}
+
+html {
+  overflow-x: clip;
+  background-color: var(--color-ground);
+}
+
+body {
+  overflow-x: clip;
+  background-color: var(--color-ground);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-midnight);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+[role='button']:active,
+[role='link']:active {
+  opacity: 0.85;
 }

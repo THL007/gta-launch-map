@@ -1,56 +1,64 @@
-# Welcome to your Expo app 👋
+# GTA Launch Map
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo SDK 58 app with Expo Router, TypeScript, and Progressive Web App support. Targets web (static PWA) first, with iOS/Android via Expo when you need native shells.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- Expo Router (`src/app`) + React Compiler
+- Static web export (`web.output: "static"`)
+- PWA manifest + Workbox service worker
+- Strict TypeScript path aliases (`@/*` → `src/*`)
 
-   ```bash
-   npm install
-   ```
+## Commands
 
-2. Start the app
+```bash
+npm install
+npm run web          # local web/PWA development
+npm run start        # Expo Dev Tools (web/ios/android)
+npm run typecheck
+npm run lint
+npm run build:web    # static export + Workbox SW → dist/
+npm run serve:web    # preview dist/
+```
 
-   ```bash
-   npx expo start
-   ```
+## PWA notes
 
-In the output, you'll find options to open the app in a
+- Manifest: `public/manifest.json`
+- Icons: `public/logo192.png`, `public/logo512.png`, `public/apple-touch-icon.png`
+- Root HTML: `src/app/+html.tsx` (manifest, theme-color, SW bootstrap)
+- Production offline cache: `workbox-config.js` (generated into `dist/sw.js` by `build:web`)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Installability needs HTTPS in production. Chrome → Application → Manifest / Service Workers to verify.
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Project layout
 
-## Get a fresh project
+```
+src/app/           routes + +html.tsx
+src/components/    UI
+src/constants/     theme tokens
+src/hooks/
+public/            static PWA assets (copied into dist/)
+assets/            Expo icons / splash
+```
 
-When you're ready, run:
+## Environment
+
+Copy `.env.example` → `.env` and use `EXPO_PUBLIC_*` for client-safe values.
+
+## Native / EAS
+
+`eas.json` is ready. After linking an Expo project, set `extra.eas.projectId` in `app.json`, then:
+
+```bash
+npx eas-cli@latest init
+npx eas-cli@latest build --platform all
+npx eas-cli@latest deploy   # Expo Hosting for the web export
+```
+
+## Fresh app shell
+
+To drop the starter screens and keep config:
 
 ```bash
 npm run reset-project
 ```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
