@@ -220,28 +220,31 @@ export function LaunchGlobe({ size, now, clocks, statuses, selected, onSelect, f
   const sel = selected ? markers.find((m) => m.c.id === selected.id) : undefined;
 
   const fs = Math.max(11, Math.round(size * 0.017));
-  const chipH = fs * 2 + 14;
+  const chipH = fs * 3 + 18;
   const taken: Box[] = sel ? [{ x: sel.xy[0] - 14, y: sel.xy[1] - 30, w: size * 0.36, h: 72 }] : [];
-  const chips: { c: ZoneClock; box: Box; name: string; line: string }[] = [];
+  const chips: { c: ZoneClock; box: Box; name: string; time: string; count: string }[] = [];
   const order = [...markers]
     .filter((m) => m.c.id !== selected?.id)
     .sort((a, b) => {
+      // Cities with early players claim their label space first so they are never crowded out.
+      if (a.c.premium !== b.c.premium) return a.c.premium ? -1 : 1;
       if (a.c.status !== b.c.status) return a.c.status === 'waiting' ? -1 : 1;
       return a.c.status === 'waiting' ? a.c.remainingMs - b.c.remainingMs : b.c.unlockAt - a.c.unlockAt;
     });
   for (const m of order) {
     const name = shortName(m.c);
-    const line = m.c.status === 'live' ? formatPlayers(playersAt(m.c, countNow)) : formatCountdown(m.c.remainingMs);
+    const time = m.c.status === 'live' ? 'Live' : formatCountdown(m.c.remainingMs);
+    // Counts from 0 the moment the region goes live.
+    const count = formatPlayers(playersAt(m.c, countNow));
     // Sized for the region's full first-day figure, so chips do not jump as the count grows.
-    const widest = m.c.status === 'live' ? formatPlayers(m.c.players) : line;
-    const w = Math.max(name.length, widest.length) * fs * 0.6 + 16;
+    const w = Math.max(name.length, time.length, formatPlayers(m.c.players).length) * fs * 0.6 + 16;
     const right: Box = { x: m.xy[0] + 8, y: m.xy[1] - chipH / 2, w, h: chipH };
     const left: Box = { x: m.xy[0] - 8 - w, y: right.y, w, h: chipH };
     const fits = (b: Box) => b.x >= 2 && b.x + b.w <= size - 2 && b.y >= 2 && b.y + b.h <= size - 2;
     const box = [right, left].find((b) => fits(b) && !taken.some((t) => overlaps(t, b)));
     if (!box) continue;
     taken.push(box);
-    chips.push({ c: m.c, box, name, line });
+    chips.push({ c: m.c, box, name, time, count });
   }
 
   return (
@@ -250,7 +253,7 @@ export function LaunchGlobe({ size, now, clocks, statuses, selected, onSelect, f
       style={{ width: size, height: size }}
       accessible
       accessibilityRole="image"
-      accessibilityLabel="Globe showing where GTA VI has unlocked, with estimated first-day players per region.">
+      accessibilityLabel="Globe showing where GTA VI has unlocked, with live player counts per region.">
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <Defs>
           <RadialGradient id="sea" cx="38%" cy="32%" r="70%">
@@ -295,7 +298,7 @@ export function LaunchGlobe({ size, now, clocks, statuses, selected, onSelect, f
         <Circle cx={size / 2} cy={size / 2} r={r} fill="url(#shade)" pointerEvents="none" />
 
         <G pointerEvents="none">
-          {chips.map(({ c, box, name, line }) => (
+          {chips.map(({ c, box, name, time, count }) => (
             <G key={`chip-${c.id}`}>
               <Rect x={box.x} y={box.y} width={box.w} height={box.h} rx={4} fill={color.ground} fillOpacity={0.82} />
               <SvgText x={box.x + 7} y={box.y + fs + 2} fontSize={fs} fontFamily={font.bodyStrong} fill={color.ink}>
@@ -307,7 +310,15 @@ export function LaunchGlobe({ size, now, clocks, statuses, selected, onSelect, f
                 fontSize={fs}
                 fontFamily={font.bodyStrong}
                 fill={c.status === 'live' ? color.live : color.rolling}>
-                {line}
+                {time}
+              </SvgText>
+              <SvgText
+                x={box.x + 7}
+                y={box.y + fs * 3 + 6}
+                fontSize={fs}
+                fontFamily={font.bodyStrong}
+                fill={c.status === 'live' || c.premium ? color.ink : color.inkMuted}>
+                {count}
               </SvgText>
             </G>
           ))}
@@ -338,9 +349,7 @@ export function LaunchGlobe({ size, now, clocks, statuses, selected, onSelect, f
               fill={color.inkMuted}
               fontFamily={font.body}
               fontSize={Math.max(11, size * 0.02)}>
-              {sel.c.status === 'live'
-                ? `${formatPlayers(playersAt(sel.c, countNow))} playing`
-                : `${formatPlayers(sel.c.players)} expected on day one`}
+              {`${formatPlayers(playersAt(sel.c, countNow))} playing`}
             </SvgText>
           </G>
         ) : null}

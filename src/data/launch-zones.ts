@@ -15,7 +15,15 @@ export type LaunchZone = {
   offsetMinutes: number;
   lat: number;
   lon: number;
+  /**
+   * A handful of premium players who get in early, before the city's midnight.
+   * An unverified estimate for the fan map, not a Rockstar programme.
+   */
+  premiumPlayers?: number;
 };
+
+/** Premium players are in from this moment (17 Nov 2026, 00:00 UTC), ahead of every public midnight. */
+export const PREMIUM_OPENS_AT = Date.UTC(2026, 10, 17, 0, 0, 0);
 
 export const LAUNCH_DATE = { year: 2026, month: 11, day: 19 } as const;
 
@@ -25,17 +33,19 @@ export const LAUNCH_ZONES: LaunchZone[] = [
   { id: 'au-adl', country: 'Australia', place: 'Adelaide', iso: '036', offsetMinutes: 630, lat: -34.93, lon: 138.6 },
   { id: 'au-bne', country: 'Australia', place: 'Brisbane', iso: '036', offsetMinutes: 600, lat: -27.47, lon: 153.03 },
   { id: 'jp', country: 'Japan', place: 'Tokyo', iso: '392', offsetMinutes: 540, lat: 35.68, lon: 139.69 },
+  // One player and no public launch figure: the count stays at 1.
+  { id: 'kp', country: 'North Korea', place: 'Pyongyang', iso: '408', offsetMinutes: 540, lat: 39.04, lon: 125.76, premiumPlayers: 1 },
   { id: 'kr', country: 'South Korea', place: 'Seoul', iso: '410', offsetMinutes: 540, lat: 37.57, lon: 126.98 },
   { id: 'au-per', country: 'Australia', place: 'Perth', iso: '036', offsetMinutes: 480, lat: -31.95, lon: 115.86 },
   { id: 'sg', country: 'Singapore', place: 'Singapore', iso: '702', offsetMinutes: 480, lat: 1.35, lon: 103.82 },
   { id: 'tw', country: 'Taiwan', place: 'Taipei', iso: '158', offsetMinutes: 480, lat: 25.03, lon: 121.57 },
-  { id: 'hk', country: 'Hong Kong', place: 'Hong Kong', iso: '344', offsetMinutes: 480, lat: 22.32, lon: 114.17 },
+  { id: 'hk', country: 'Hong Kong', place: 'Hong Kong', iso: '344', offsetMinutes: 480, lat: 22.32, lon: 114.17, premiumPlayers: 4 },
   { id: 'ph', country: 'Philippines', place: 'Manila', iso: '608', offsetMinutes: 480, lat: 14.6, lon: 120.98 },
   { id: 'my', country: 'Malaysia', place: 'Kuala Lumpur', iso: '458', offsetMinutes: 480, lat: 3.14, lon: 101.69 },
   { id: 'th', country: 'Thailand', place: 'Bangkok', iso: '764', offsetMinutes: 420, lat: 13.76, lon: 100.5 },
   { id: 'id', country: 'Indonesia', place: 'Jakarta', iso: '360', offsetMinutes: 420, lat: -6.21, lon: 106.85 },
   { id: 'vn', country: 'Vietnam', place: 'Ho Chi Minh City', iso: '704', offsetMinutes: 420, lat: 10.82, lon: 106.63 },
-  { id: 'in', country: 'India', place: 'Mumbai', iso: '356', offsetMinutes: 330, lat: 19.08, lon: 72.88 },
+  { id: 'in', country: 'India', place: 'Mumbai', iso: '356', offsetMinutes: 330, lat: 19.08, lon: 72.88, premiumPlayers: 5 },
   { id: 'pk', country: 'Pakistan', place: 'Karachi', iso: '586', offsetMinutes: 300, lat: 24.86, lon: 67.01 },
   { id: 'ae', country: 'United Arab Emirates', place: 'Dubai', iso: '784', offsetMinutes: 240, lat: 25.2, lon: 55.27 },
   { id: 'sa', country: 'Saudi Arabia', place: 'Riyadh', iso: '682', offsetMinutes: 180, lat: 24.71, lon: 46.68 },
@@ -44,9 +54,9 @@ export const LAUNCH_ZONES: LaunchZone[] = [
   { id: 'eg', country: 'Egypt', place: 'Cairo', iso: '818', offsetMinutes: 120, lat: 30.04, lon: 31.24 },
   { id: 'gr', country: 'Greece', place: 'Athens', iso: '300', offsetMinutes: 120, lat: 37.98, lon: 23.73 },
   { id: 'fi', country: 'Finland', place: 'Helsinki', iso: '246', offsetMinutes: 120, lat: 60.17, lon: 24.94 },
-  { id: 'il', country: 'Israel', place: 'Tel Aviv', iso: '376', offsetMinutes: 120, lat: 32.09, lon: 34.78 },
+  { id: 'il', country: 'Israel', place: 'Tel Aviv', iso: '376', offsetMinutes: 120, lat: 32.09, lon: 34.78, premiumPlayers: 3 },
   { id: 'de', country: 'Germany', place: 'Berlin', iso: '276', offsetMinutes: 60, lat: 52.52, lon: 13.4 },
-  { id: 'fr', country: 'France', place: 'Paris', iso: '250', offsetMinutes: 60, lat: 48.86, lon: 2.35 },
+  { id: 'fr', country: 'France', place: 'Paris', iso: '250', offsetMinutes: 60, lat: 48.86, lon: 2.35, premiumPlayers: 3 },
   { id: 'es', country: 'Spain', place: 'Madrid', iso: '724', offsetMinutes: 60, lat: 40.42, lon: -3.7 },
   { id: 'it', country: 'Italy', place: 'Rome', iso: '380', offsetMinutes: 60, lat: 41.9, lon: 12.5 },
   { id: 'nl', country: 'Netherlands', place: 'Amsterdam', iso: '528', offsetMinutes: 60, lat: 52.37, lon: 4.9 },
@@ -54,7 +64,7 @@ export const LAUNCH_ZONES: LaunchZone[] = [
   { id: 'se', country: 'Sweden', place: 'Stockholm', iso: '752', offsetMinutes: 60, lat: 59.33, lon: 18.07 },
   { id: 'no', country: 'Norway', place: 'Oslo', iso: '578', offsetMinutes: 60, lat: 59.91, lon: 10.75 },
   { id: 'ng', country: 'Nigeria', place: 'Lagos', iso: '566', offsetMinutes: 60, lat: 6.52, lon: 3.38 },
-  { id: 'gb', country: 'United Kingdom', place: 'London', iso: '826', offsetMinutes: 0, lat: 51.51, lon: -0.13 },
+  { id: 'gb', country: 'United Kingdom', place: 'London', iso: '826', offsetMinutes: 0, lat: 51.51, lon: -0.13, premiumPlayers: 3 },
   { id: 'ie', country: 'Ireland', place: 'Dublin', iso: '372', offsetMinutes: 0, lat: 53.35, lon: -6.26 },
   { id: 'pt', country: 'Portugal', place: 'Lisbon', iso: '620', offsetMinutes: 0, lat: 38.72, lon: -9.14 },
   { id: 'br', country: 'Brazil', place: 'São Paulo', iso: '076', offsetMinutes: -180, lat: -23.55, lon: -46.63 },
@@ -65,6 +75,10 @@ export const LAUNCH_ZONES: LaunchZone[] = [
   { id: 'ca-tor', country: 'Canada', place: 'Toronto', iso: '124', offsetMinutes: -300, lat: 43.65, lon: -79.38 },
   { id: 'co', country: 'Colombia', place: 'Bogotá', iso: '170', offsetMinutes: -300, lat: 4.71, lon: -74.07 },
   { id: 'pe', country: 'Peru', place: 'Lima', iso: '604', offsetMinutes: -300, lat: -12.05, lon: -77.04 },
+  { id: 'us-dc', country: 'United States', place: 'Washington D.C.', iso: '840', offsetMinutes: -300, lat: 38.91, lon: -77.04, premiumPlayers: 5 },
+  { id: 'us-mia', country: 'United States', place: 'Miami', iso: '840', offsetMinutes: -300, lat: 25.76, lon: -80.19, premiumPlayers: 4 },
+  { id: 'us-hou', country: 'United States', place: 'Houston', iso: '840', offsetMinutes: -360, lat: 29.76, lon: -95.37, premiumPlayers: 3 },
+  { id: 'us-lv', country: 'United States', place: 'Las Vegas', iso: '840', offsetMinutes: -480, lat: 36.17, lon: -115.14, premiumPlayers: 6 },
   { id: 'us-ct', country: 'United States', place: 'Chicago (Central)', iso: '840', offsetMinutes: -360, lat: 41.88, lon: -87.63 },
   { id: 'mx', country: 'Mexico', place: 'Mexico City', iso: '484', offsetMinutes: -360, lat: 19.43, lon: -99.13 },
   { id: 'us-mt', country: 'United States', place: 'Denver (Mountain)', iso: '840', offsetMinutes: -420, lat: 39.74, lon: -104.99 },

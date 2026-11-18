@@ -1,4 +1,4 @@
-import { LAUNCH_DATE, LAUNCH_ZONES, type LaunchZone } from '@/data/launch-zones';
+import { LAUNCH_DATE, LAUNCH_ZONES, PREMIUM_OPENS_AT, type LaunchZone } from '@/data/launch-zones';
 import { FIRST_DAY_PLAYERS_TOTAL, PLAYERS_BY_ZONE } from '@/data/player-estimates';
 import { TICK_MS } from '@/lib/clock';
 
@@ -8,6 +8,8 @@ export type ZoneClock = LaunchZone & {
   unlockAt: number;
   remainingMs: number;
   status: ZoneStatus;
+  /** Inside the early window: only its few premium players are in. */
+  premium: boolean;
   /** Invented first-day estimate for this region (the total it reaches 24 hours after midnight). */
   players: number;
 };
@@ -30,11 +32,13 @@ export function zoneClocks(now: number): ZoneClock[] {
   return LAUNCH_ZONES.map((zone) => {
     const unlockAt = unlockInstant(zone.offsetMinutes);
     const remainingMs = unlockAt - now;
+    const premium = !!zone.premiumPlayers && remainingMs > 0 && now >= PREMIUM_OPENS_AT;
     return {
       ...zone,
       unlockAt,
       remainingMs,
       status: remainingMs <= 0 ? 'live' : 'waiting',
+      premium,
       players: PLAYERS_BY_ZONE[zone.id] ?? 0,
     } as ZoneClock;
   }).sort((a, b) => a.unlockAt - b.unlockAt || a.country.localeCompare(b.country));
@@ -58,14 +62,31 @@ function rush(x: number, k: number) {
   return (1 - Math.exp(-k * x)) / (1 - Math.exp(-k));
 }
 
+/** Premium players join one by one, each at a random moment in the first two hours after premium access opens. */
+function premiumAt(c: Pick<ZoneClock, 'id' | 'unlockAt' | 'premiumPlayers'>, now: number): number {
+  const n = c.premiumPlayers ?? 0;
+  const opens = PREMIUM_OPENS_AT;
+  let inside = 0;
+  for (let i = 0; i < n; i++) if (now >= opens + hash01(c.id, -1 - i) * 7_200_000) inside++;
+  return inside;
+}
+
 /**
- * Estimated players in a region at `now`: 0 before its midnight, climbing to its
- * first-day estimate 24 hours later. Each region rushes at its own rate, and every
- * tick adds a random-sized step that never runs backwards.
+ * Estimated players in a region at `now`. Before its midnight: only its premium few, if any.
+ * From midnight it climbs to its first-day estimate 24 hours later. Each region rushes at
+ * its own rate, and every tick adds a random-sized step that never runs backwards.
  */
-export function playersAt(c: Pick<ZoneClock, 'id' | 'unlockAt' | 'players'>, now: number): number {
+export function playersAt(
+  c: Pick<ZoneClock, 'id' | 'unlockAt' | 'players' | 'premiumPlayers'>,
+  now: number,
+): number {
+  const early = premiumAt(c, now);
   const elapsed = now - c.unlockAt;
-  if (elapsed <= 0) return 0;
+  if (elapsed <= 0) return early;
+  return early + publicPlayersAt(c, now, elapsed);
+}
+
+function publicPlayersAt(c: Pick<ZoneClock, 'id' | 'unlockAt' | 'players'>, now: number, elapsed: number): number {
   if (elapsed >= DAY_MS) return c.players;
   const k = 3 + hash01(c.id, 0) * 3;
   const step = Math.floor(now / TICK_MS);

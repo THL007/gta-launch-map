@@ -17,7 +17,6 @@ import { LaunchGlobe } from '@/components/launch-globe';
 import { color, font, maxWidth, radius, space } from '@/constants/tokens';
 import { POSTERS, type Poster } from '@/data/key-art';
 import {
-  FIRST_DAY_PLAYERS_TOTAL,
   countryStatuses,
   deviceUnlockInstant,
   formatCountdown,
@@ -25,7 +24,6 @@ import {
   formatPlayers,
   formatUtc,
   playersAt,
-  totalPlayersAt,
   zoneClocks,
   type ZoneClock,
 } from '@/lib/launch';
@@ -57,13 +55,10 @@ export default function LaunchMap() {
 
   const clocks = useMemo(() => zoneClocks(now), [now]);
   const statuses = useMemo(() => countryStatuses(clocks), [clocks]);
-  const liveCount = clocks.filter((c) => c.status === 'live').length;
   const next = clocks.find((c) => c.status === 'waiting') ?? null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = clocks.find((c) => c.id === selectedId) ?? null;
-  const [followKey, setFollowKey] = useState(0);
-  const [manual, setManual] = useState(false);
   const [query, setQuery] = useState('');
 
   const contentWidth = Math.min(width, maxWidth) - space.md * 2;
@@ -82,11 +77,6 @@ export default function LaunchMap() {
     scroller.current?.scrollTo({ y: 0, animated: true });
   }, []);
 
-  const follow = () => {
-    setSelectedId(null);
-    setFollowKey((k) => k + 1);
-  };
-
   return (
     <ScrollView
       ref={scroller}
@@ -102,8 +92,8 @@ export default function LaunchMap() {
               statuses={statuses}
               selected={selected}
               onSelect={select}
-              followKey={followKey}
-              onManualChange={setManual}
+              followKey={0}
+              onManualChange={() => {}}
             />
           </View>
 
@@ -111,14 +101,6 @@ export default function LaunchMap() {
             <Legend swatch={color.live} label="Live" />
             <Legend swatch={color.rolling} label="Partly live" />
             <Legend swatch={color.land} label="Waiting" />
-          </View>
-          <View style={styles.globeActions}>
-            <Text style={styles.small}>Drag to turn the globe. Tap a city to follow it.</Text>
-            {manual || selected ? (
-              <Pressable accessibilityRole="button" onPress={follow} style={styles.ghost}>
-                <Text style={styles.ghostText}>Follow midnight</Text>
-              </Pressable>
-            ) : null}
           </View>
 
           <View style={styles.next} accessibilityLiveRegion="polite">
@@ -135,17 +117,8 @@ export default function LaunchMap() {
             ) : (
               <Text style={styles.nextCountry}>Out everywhere.</Text>
             )}
-            <Text style={styles.muted}>
-              {liveCount} of {clocks.length} regions on this map are live.
-            </Text>
           </View>
 
-          <View style={styles.players}>
-            <TotalPlayers clocks={clocks} now={now} reduceMotion={reduceMotion} wide={wide} />
-            <Text style={styles.small}>
-              Estimated players so far, of {formatPlayers(FIRST_DAY_PLAYERS_TOTAL)} by the end of day one.
-            </Text>
-          </View>
         </View>
 
         {/* Your clock */}
@@ -165,7 +138,6 @@ export default function LaunchMap() {
           <Text style={styles.h2} accessibilityRole="header">
             Posters
           </Text>
-          <Text style={styles.muted}>Launch art, each file at its own shape.</Text>
           <PosterWall width={contentWidth} wide={wide} />
         </View>
 
@@ -192,7 +164,7 @@ export default function LaunchMap() {
                 accessibilityRole="button"
                 accessibilityLabel={`${c.country}, ${c.place}. ${
                   c.status === 'live' ? 'Live' : `Goes live in ${formatCountdown(c.remainingMs)}`
-                }. ${formatPlayers(c.players)} players expected on day one. Show on globe.`}
+                }. Show on globe.`}
                 onPress={() => select(c.id)}
                 style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
                   styles.row,
@@ -206,14 +178,14 @@ export default function LaunchMap() {
                   <Text style={styles.small}>
                     {c.place}, {formatOffset(c.offsetMinutes)}
                   </Text>
-                  {c.status === 'live' ? (
-                    <RegionPlayers clock={c} now={now} reduceMotion={reduceMotion} />
-                  ) : (
-                    <Text style={styles.small}>{formatPlayers(c.players)} expected</Text>
-                  )}
+                  <RegionPlayers clock={c} now={now} reduceMotion={reduceMotion} />
                 </View>
                 <View style={styles.rowSide}>
-                  <Text style={[styles.rowClock, c.status === 'live' && { color: color.live }]}>
+                  <Text
+                    style={[
+                      styles.rowClock,
+                      c.status === 'live' && { color: color.live },
+                    ]}>
                     {c.status === 'live' ? 'Live' : formatCountdown(c.remainingMs)}
                   </Text>
                   <Text style={styles.small}>{formatUtc(c.unlockAt)}</Text>
@@ -222,37 +194,15 @@ export default function LaunchMap() {
             ))}
           </View>
         </View>
-
       </View>
     </ScrollView>
-  );
-}
-
-/** The map-wide counter. Re-renders on the fast tick on its own, not the whole page. */
-function TotalPlayers({
-  clocks,
-  now,
-  reduceMotion,
-  wide,
-}: {
-  clocks: ZoneClock[];
-  now: number;
-  reduceMotion: boolean;
-  wide: boolean;
-}) {
-  const fast = useFastNow();
-  const total = totalPlayersAt(clocks, reduceMotion ? now : fast);
-  return (
-    <Text style={[styles.playersTotal, { fontSize: wide ? 64 : 40, lineHeight: wide ? 68 : 44 }]}>
-      {formatPlayers(total)}
-    </Text>
   );
 }
 
 function RegionPlayers({ clock, now, reduceMotion }: { clock: ZoneClock; now: number; reduceMotion: boolean }) {
   const fast = useFastNow();
   return (
-    <Text style={[styles.small, styles.regionPlayers]}>
+    <Text style={[styles.small, clock.status === 'live' && styles.regionPlayers, clock.premium && styles.premiumPlayers]}>
       {formatPlayers(playersAt(clock, reduceMotion ? now : fast))} playing
     </Text>
   );
@@ -331,22 +281,12 @@ const styles = StyleSheet.create({
   next: { gap: space.xs, alignItems: 'center', paddingTop: space.lg },
   nextCountry: { fontFamily: font.display, color: color.rolling, fontSize: 32, lineHeight: 36, textAlign: 'center' },
   bigClock: { fontFamily: font.display, color: color.ink, ...tabular },
-  players: { gap: space.xs, alignItems: 'center' },
-  playersTotal: { fontFamily: font.display, color: color.live, letterSpacing: -1, textAlign: 'center', ...tabular },
   regionPlayers: { color: color.live, ...tabular },
+  premiumPlayers: { color: color.midnight, ...tabular },
 
   legend: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.md },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   legendSwatch: { width: 14, height: 14, borderRadius: 3 },
-  globeActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.md },
-  ghost: {
-    paddingVertical: space.sm,
-    paddingHorizontal: space.md,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: color.midnight,
-  },
-  ghostText: { fontFamily: font.bodyStrong, color: color.midnight, fontSize: 14 },
 
   section: { paddingTop: space.xxl, gap: space.md },
   h2: { fontFamily: font.display, color: color.ink, fontSize: 32, lineHeight: 36 },
