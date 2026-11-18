@@ -83,6 +83,16 @@ export default function LaunchMap() {
       style={styles.page}
       contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <View style={styles.container}>
+        <View style={styles.header} accessibilityRole="header">
+          <Image
+            source={require('../../assets/images/vi-mark.png')}
+            style={{ width: wide ? 88 : 68, height: wide ? 66 : 52 }}
+            contentFit="contain"
+            transition={0}
+            accessibilityLabel="VI"
+          />
+        </View>
+
         <View style={styles.hero}>
           <View style={[styles.stage, { height: globeSize }]}>
             <LaunchGlobe
@@ -270,10 +280,16 @@ const rowBase: ViewStyle = {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: color.ground },
   container: { width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: space.md },
+  header: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: space.md,
+    paddingBottom: space.sm,
+  },
   small: { ...body, fontSize: 14, lineHeight: 20, color: color.inkMuted },
   muted: { ...body, color: color.inkMuted },
 
-  hero: { paddingTop: space.xl, gap: space.lg, alignItems: 'center' },
+  hero: { paddingTop: space.md, gap: space.lg, alignItems: 'center' },
   stage: { width: '100%', alignItems: 'center', justifyContent: 'center' },
   posterWall: { gap: space.lg },
   posterRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.lg },
